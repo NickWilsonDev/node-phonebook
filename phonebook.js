@@ -1,13 +1,25 @@
 /* phonebook.js */
 
 var readline = require('readline');
+var fs = require('fs');
+var promisify = require('util').promisify;
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
+var readFile = promisify(fs.readFile);
+var writeFile = promisify(fs.writeFile);
+
 var entries = [];
+
+// convert readline to promise form
+var rlQuestionAsPromise = function(question) {
+    return new Promise(function(resolve) {
+        rl.question(question, resolve);
+    });
+}
 
 var lookupEntry = function () {
     rl.question('Name:', function (name) {
@@ -24,16 +36,35 @@ var lookupEntry = function () {
 }
 
 var setEntry = function () {
-    rl.question('Name:', function (name) {
-        rl.question('Phone Number:', function(number) {
-            var contact = {};
-            contact.name = name;
-            contact.number = number;
+    var contact = {};
+    rlQuestionAsPromise('Name:')
+        .then(function(data) {
+            //var contact = {};
+            contact.name = data;
+            return rlQuestionAsPromise('Number:')
+        })
+        .then(function(data) {
+            console.log(data);
+            
+            contact.number = data;
             entries.push(contact);
-            console.log('Entry stored for ' + name);
+            console.log(entries);
+        })
+        .then(function() {
             mainMenu();
+            console.log(contact);
         });
-    });
+                    
+    //rl.question('Name:', function (name) {
+    //    rl.question('Phone Number:', function(number) {
+    //        var contact = {};
+    //        contact.name = name;
+    //        contact.number = number;
+    //        entries.push(contact);
+    //        console.log('Entry stored for ' + name);
+    //        mainMenu();
+    //    });
+    //});
 }
 
 var deleteEntry = function () {
@@ -57,6 +88,27 @@ var displayEntries = function () {
     mainMenu();
 }
 
+var saveToFile = function () {
+    writeFile('./data.json', JSON.stringify(entries))
+        .then(function () {
+            console.log('Entries were saved to data.json');
+        })
+        .then(function () {
+            mainMenu();
+        });
+}
+
+var readFromFile = function () {
+    readFile('./data.json')
+        .then(function (data) {
+            entries = JSON.parse(data);
+            console.log('Data loaded');
+        })
+        .then(function () {
+            mainMenu();
+        });
+}
+
 var mainMenu = function () {
     rl.question('Electronic Phone Book\n' +
              '=====================\n' +
@@ -64,7 +116,9 @@ var mainMenu = function () {
              '2. Set an entry\n' +
              '3. Delete an entry\n' +
              '4. List all entries\n' +
-             '5. Quit\n' +
+             '5. Save to file\n' +
+             '6. Load from file\n' +
+             '7. Quit\n' +
              'What do you want to do (1-5)?\n', function (choice) {
         parsedInt = parseInt(choice);
         switch (parsedInt) {
@@ -85,11 +139,19 @@ var mainMenu = function () {
                 //console.log('list all entries');
                 break;
             case 5:
+                saveToFile();
+                break;
+            case 6:
+                readFromFile();
+                break;
+            case 7:
                 rl.close();
+                //saveToFile();
                 //process.exit(0);
                 break;
             default:
                 console.log('Try again');
+                break;
         }
     });
 }
