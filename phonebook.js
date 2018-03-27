@@ -14,9 +14,6 @@ const rl = readline.createInterface({
 const dbConfig = 'postgres://nickwilson@localhost:5432/contacts';
 const db = pg(dbConfig);
 
-//let readFile = promisify(fs.readFile);
-//let writeFile = promisify(fs.writeFile);
-
 
 // search db by name
 let searchDBByName = name => {
@@ -38,6 +35,11 @@ let insertNewContact = contact => {
         VALUES('${contact.name}', '${contact.number}')`);
 };
 
+// delete contact by id
+let deleteContact = id => {
+    db.query(`DELETE from contacts where id = ${id};`);
+};
+
 // convert readline to promise form
 let rlQuestionAsPromise = function(question) {
     return new Promise(function(resolve) {
@@ -56,33 +58,32 @@ let setEntry = function () {
     var contact = {};
     rlQuestionAsPromise('Name:')
         .then(function(data) {
-            //var contact = {};
             contact.name = data;
             return rlQuestionAsPromise('Number:')
         })
         .then(function(data) {
-            //console.log(data);
             contact.number = data;
-            //console.log(entries);
         })
         .then(function() {
             mainMenu();
-            console.log(contact);
             insertNewContact(contact);
         });
 };
 
 let deleteEntry = function () {
-    rl.question('Name: ', function (name) {
-        var temp = [];
-        for (var i = 0; i < entries.length; i++) {
-            if (entries[i].name != name) {
-                temp.push(entries[i]);
-            }
-        }
-        entries = temp;
-        mainMenu();
-    });
+    rlQuestionAsPromise('Name: ')
+        .then( (name) => {
+            searchDBByName(name);
+        })
+        .then( () => {
+            return rlQuestionAsPromise('Id to delete:');
+        })
+        .then( data => {
+            deleteContact(data);
+        })
+        .then( () => {
+            mainMenu();
+        });
 }
 
 let displayEntries = function () {
