@@ -1,16 +1,22 @@
 /* phonebook.js */
 
-var readline = require('readline');
-var fs = require('fs');
-var promisify = require('util').promisify;
+const pg = require('pg-promise')(); // immediately invoke
+const readline = require('readline');
+//var fs = require('fs');
+const promisify = require('util').promisify;
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
-var readFile = promisify(fs.readFile);
-var writeFile = promisify(fs.writeFile);
+
+// database stuff
+const dbConfig = 'postgres://nickwilson@localhost:5432/exercises';
+const db = pg(dbConfig);
+
+let readFile = promisify(fs.readFile);
+let writeFile = promisify(fs.writeFile);
 
 
 // convert readline to promise form
