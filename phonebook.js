@@ -12,7 +12,6 @@ const rl = readline.createInterface({
 var readFile = promisify(fs.readFile);
 var writeFile = promisify(fs.writeFile);
 
-var entries = [];
 
 // convert readline to promise form
 var rlQuestionAsPromise = function(question) {
@@ -54,17 +53,6 @@ var setEntry = function () {
             mainMenu();
             console.log(contact);
         });
-                    
-    //rl.question('Name:', function (name) {
-    //    rl.question('Phone Number:', function(number) {
-    //        var contact = {};
-    //        contact.name = name;
-    //        contact.number = number;
-    //        entries.push(contact);
-    //        console.log('Entry stored for ' + name);
-    //        mainMenu();
-    //    });
-    //});
 }
 
 var deleteEntry = function () {
@@ -146,8 +134,6 @@ var mainMenu = function () {
                 break;
             case 7:
                 rl.close();
-                //saveToFile();
-                //process.exit(0);
                 break;
             default:
                 console.log('Try again');
