@@ -11,12 +11,32 @@ const rl = readline.createInterface({
 
 
 // database stuff
-const dbConfig = 'postgres://nickwilson@localhost:5432/exercises';
+const dbConfig = 'postgres://nickwilson@localhost:5432/contacts';
 const db = pg(dbConfig);
 
-let readFile = promisify(fs.readFile);
-let writeFile = promisify(fs.writeFile);
+//let readFile = promisify(fs.readFile);
+//let writeFile = promisify(fs.writeFile);
 
+
+// search db by name
+let searchDBByName = name => {
+    console.log(name);
+    db.query(`select * from contacts where name ILIKE '${name}';`)
+            .then((results) => console.log(results));
+};
+
+// get all contacts from db
+let getAllContactsDB = () => {
+    db.query(`select * from contacts;`)
+           .then((results) => console.log(results));
+};
+
+
+// insert new contact
+let insertNewContact = contact => {
+    db.query(`insert into contacts (name, number)
+        VALUES('${contact.name}', '${contact.number}')`);
+};
 
 // convert readline to promise form
 let rlQuestionAsPromise = function(question) {
@@ -27,14 +47,7 @@ let rlQuestionAsPromise = function(question) {
 
 let lookupEntry = function () {
     rl.question('Name:', function (name) {
-        for (var i = 0; i < entries.length; i++) {
-            if (entries[i].name == name) {
-                console.log('Found entry for ' + name + ' '
-                            + entries[i].number);
-                mainMenu();
-            }
-        }
-        console.log('No entry found for ' + name);
+        searchDBByName(name);
         mainMenu();
     });
 }
@@ -48,17 +61,16 @@ let setEntry = function () {
             return rlQuestionAsPromise('Number:')
         })
         .then(function(data) {
-            console.log(data);
-            
+            //console.log(data);
             contact.number = data;
-            entries.push(contact);
-            console.log(entries);
+            //console.log(entries);
         })
         .then(function() {
             mainMenu();
             console.log(contact);
+            insertNewContact(contact);
         });
-}
+};
 
 let deleteEntry = function () {
     rl.question('Name: ', function (name) {
@@ -74,10 +86,11 @@ let deleteEntry = function () {
 }
 
 let displayEntries = function () {
-    for (var i = 0; i < entries.length; i++) {
-        console.log('Found entry for ' + entries[i].name + ': ' 
-                    + entries[i].number);
-    }
+    //for (var i = 0; i < entries.length; i++) {
+    //    console.log('Found entry for ' + entries[i].name + ': ' 
+   //                 + entries[i].number);
+    //}
+    getAllContactsDB();
     mainMenu();
 }
 
@@ -89,9 +102,7 @@ let mainMenu = function () {
              '2. Set an entry\n' +
              '3. Delete an entry\n' +
              '4. List all entries\n' +
-             '5. Save to file\n' +
-             '6. Load from file\n' +
-             '7. Quit\n' +
+             '5. Quit\n' +
              'What do you want to do (1-5)?\n', function (choice) {
         parsedInt = parseInt(choice);
         switch (parsedInt) {
@@ -112,12 +123,6 @@ let mainMenu = function () {
                 //console.log('list all entries');
                 break;
             case 5:
-                saveToFile();
-                break;
-            case 6:
-                readFromFile();
-                break;
-            case 7:
                 rl.close();
                 break;
             default:
