@@ -2,7 +2,6 @@
 
 const pg = require('pg-promise')(); // immediately invoke
 const readline = require('readline');
-//var fs = require('fs');
 const promisify = require('util').promisify;
 
 const rl = readline.createInterface({
@@ -20,13 +19,13 @@ let writeFile = promisify(fs.writeFile);
 
 
 // convert readline to promise form
-var rlQuestionAsPromise = function(question) {
+let rlQuestionAsPromise = function(question) {
     return new Promise(function(resolve) {
         rl.question(question, resolve);
     });
 }
 
-var lookupEntry = function () {
+let lookupEntry = function () {
     rl.question('Name:', function (name) {
         for (var i = 0; i < entries.length; i++) {
             if (entries[i].name == name) {
@@ -40,7 +39,7 @@ var lookupEntry = function () {
     });
 }
 
-var setEntry = function () {
+let setEntry = function () {
     var contact = {};
     rlQuestionAsPromise('Name:')
         .then(function(data) {
@@ -61,7 +60,7 @@ var setEntry = function () {
         });
 }
 
-var deleteEntry = function () {
+let deleteEntry = function () {
     rl.question('Name: ', function (name) {
         var temp = [];
         for (var i = 0; i < entries.length; i++) {
@@ -74,7 +73,7 @@ var deleteEntry = function () {
     });
 }
 
-var displayEntries = function () {
+let displayEntries = function () {
     for (var i = 0; i < entries.length; i++) {
         console.log('Found entry for ' + entries[i].name + ': ' 
                     + entries[i].number);
@@ -82,28 +81,8 @@ var displayEntries = function () {
     mainMenu();
 }
 
-var saveToFile = function () {
-    writeFile('./data.json', JSON.stringify(entries))
-        .then(function () {
-            console.log('Entries were saved to data.json');
-        })
-        .then(function () {
-            mainMenu();
-        });
-}
 
-var readFromFile = function () {
-    readFile('./data.json')
-        .then(function (data) {
-            entries = JSON.parse(data);
-            console.log('Data loaded');
-        })
-        .then(function () {
-            mainMenu();
-        });
-}
-
-var mainMenu = function () {
+let mainMenu = function () {
     rl.question('Electronic Phone Book\n' +
              '=====================\n' +
              '1. Look up an entry\n' +
